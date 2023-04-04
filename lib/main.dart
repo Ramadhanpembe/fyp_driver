@@ -1,7 +1,7 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:fyp_driver/firebase_options.dart';
-import 'package:fyp_driver/screens/signup_screen.dart';
+import 'package:fyp_driver/screens/login_screen.dart';
 
 import 'data/firestore_manager.dart';
 import 'data/location_manager.dart';
@@ -45,7 +45,7 @@ class _MyAppState extends State<MyApp> {
           selectionHandleColor: Colors.transparent,
         ),
       ),
-      home: const SignupScreen(),
+      home: const LoginScreen(),
     );
   }
 }

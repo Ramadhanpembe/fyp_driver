@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fyp_driver/models/driver_info.dart';
+import 'package:fyp_driver/models/driver_login.dart';
 import 'package:fyp_driver/models/driver_route.dart';
 import 'package:geolocator/geolocator.dart';
 
@@ -19,28 +20,14 @@ class FirestoreManager {
     _locationsMap = getMapFromList(locationsList);
   }
 
+  // works perfectly!
   void storeDriverLocations() async {
     for (var location in _locationsMap) {
       await _db.collection('locations').add(location);
     }
   }
 
-  // Future<String> storeDriverLocation(Position? position) async {
-  //   if (position != null) {
-  //     String documentID = '';
-  //     await _db.collection('locations').add({
-  //       'latitude': position.latitude,
-  //       'longitude': position.longitude,
-  //       'speed': position.speed,
-  //       'accuracy': position.accuracy,
-  //     }).then((reference) {
-  //       documentID = reference.id;
-  //     });
-  //     return documentID;
-  //   }
-  //   return Future.error('Null Position');
-  // }
-
+  // works perfectly!
   Future<String> storeDriverInfo(Position? position, DriverInfo info) async {
     if (position != null) {
       String documentID = '';
@@ -69,13 +56,49 @@ class FirestoreManager {
     return Future.error('Location cannot be determined');
   }
 
-  void updateDriverLocation(String documentID, Position position) async {
-    await _db.collection('locations').doc(documentID).update({
-      'latitude': position.latitude,
-      'longitude': position.longitude,
-      'speed': position.speed,
-      'accuracy': position.accuracy,
+  // works perfectly!
+  Future<bool> authenticateDriver(String phone, String password) async {
+    bool doesExist = false;
+    await _db.collection('drivers').get().then((querySnapshot) {
+      for (var docSnapshot in querySnapshot.docs) {
+        if (docSnapshot['login']['phone'] == phone &&
+            docSnapshot['login']['password'] == password) {
+          doesExist = true;
+        }
+      }
     });
+    return doesExist;
+  }
+
+  // This method was meant to work with position stream which unfortunately doesn't work yet
+  Future<bool> updateDriverLocation(DriverLogin login, Position position) async {
+    String documentID = '';
+    await _db.collection('drivers').get().then((querySnapshot) {
+      for (var docSnapshot in querySnapshot.docs) {
+        if (docSnapshot['login']['phone'] == login.phone &&
+            docSnapshot['login']['password'] == login.password) {
+          if (docSnapshot['location']['latitude'] == position.latitude &&
+              docSnapshot['location']['longitude'] == position.longitude) {
+            return false;
+          }
+          documentID = docSnapshot.id;
+        }
+      }
+    });
+    if (documentID.isNotEmpty) {
+      await _db.collection('drivers').doc(documentID).update({
+        'location': {
+          'latitude': position.latitude,
+          'longitude': position.longitude,
+          'accuracy': position.accuracy,
+          'speed': position.speed,
+        }
+      });
+      return true;
+    }
+
+    log('------------------------update method is reached!!!!');
+    return false;
   }
 
   // This works perfectly!

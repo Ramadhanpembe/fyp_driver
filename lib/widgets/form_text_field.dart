@@ -5,11 +5,13 @@ class FormTextField extends StatelessWidget {
   const FormTextField(
       {super.key,
       required this.hintText,
+      this.obscureText = false,
       this.keyboardType = TextInputType.text,
       this.validator,
       this.controller});
 
   final String hintText;
+  final bool obscureText;
   final TextInputType? keyboardType;
   final String? Function(String?)? validator;
   final TextEditingController? controller;
@@ -19,6 +21,7 @@ class FormTextField extends StatelessWidget {
     return TextFormField(
       validator: validator,
       controller: controller,
+      obscureText: obscureText,
       enableSuggestions: false,
       autocorrect: false,
       style: const TextStyle(

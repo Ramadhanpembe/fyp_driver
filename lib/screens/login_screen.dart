@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:fyp_driver/data/resources.dart';
+import 'package:fyp_driver/models/driver_login.dart';
 import 'package:fyp_driver/screens/home_screen.dart';
 import 'package:fyp_driver/screens/signup_screen.dart';
 
@@ -13,6 +15,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _phoneController = TextEditingController();
+  final _passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -57,6 +61,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               FormTextField(
                                 hintText: 'Phone number',
+                                controller: _phoneController,
                                 validator: (value) {
                                   if (!value!.startsWith(RegExp(r'^(\+255|0)[67]\d{8}$'))) {
                                     return 'Incorrect phone number';
@@ -67,6 +72,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               FormTextField(
                                 hintText: 'Password',
+                                obscureText: true,
+                                controller: _passwordController,
                                 validator: (value) {
                                   if (value!.startsWith(' ') || value.contains(' ')) {
                                     return 'Password can not have white space';
@@ -104,17 +111,32 @@ class _LoginScreenState extends State<LoginScreen> {
                                 child: SizedBox(
                                   width: double.infinity,
                                   child: FilledButton(
-                                    onPressed: () {
+                                    onPressed: () async {
                                       if (_formKey.currentState!.validate()) {
-                                        ScaffoldMessenger.of(context).showSnackBar(
-                                          const SnackBar(
-                                            content: Text('Validation works'),
-                                          ),
-                                        );
-                                        Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                                builder: (context) => const HomeScreen()));
+                                        bool doesExist = await firestoreManager.authenticateDriver(
+                                            _phoneController.text, _passwordController.text);
+                                        if (doesExist) {
+                                          if (mounted) {
+                                            Navigator.pop(context);
+                                            Navigator.push(
+                                                context,
+                                                MaterialPageRoute(
+                                                    builder: (context) => HomeScreen(
+                                                          login: DriverLogin(
+                                                            phone: _phoneController.text,
+                                                            password: _passwordController.text,
+                                                          ),
+                                                        )));
+                                          }
+                                        } else {
+                                          if (mounted) {
+                                            ScaffoldMessenger.of(context).showSnackBar(
+                                              const SnackBar(
+                                                content: Text('Incorrect logins info'),
+                                              ),
+                                            );
+                                          }
+                                        }
                                       }
                                     },
                                     child: const Text('Login'),

@@ -1,18 +1,23 @@
+import 'dart:async';
 import 'dart:developer';
 
+import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:fyp_driver/data/resources.dart';
+import 'package:fyp_driver/models/driver_login.dart';
 import 'package:geolocator/geolocator.dart';
 
 class LocationManager {
   late LocationSettings _locationSettings;
+  late final AndroidDeviceInfo androidInfo;
 
   LocationManager() {
     _init();
   }
   void _init() async {
+    DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
     isPermissionGranted = await _requestLocationPermission();
-    _listenForLocationUpdates();
+    androidInfo = await deviceInfoPlugin.androidInfo;
   }
 
   Future<bool> _requestLocationPermission() async {
@@ -29,6 +34,7 @@ class LocationManager {
       if (permission == LocationPermission.denied) {
         return Future.error('Location permission is denied');
       }
+      log('----------------Permission granted: $permission}');
     }
     if (permission == LocationPermission.deniedForever) {
       return Future.error(
@@ -39,16 +45,25 @@ class LocationManager {
 
   Future<Position?> getDriverCurrentLocation() async {
     if (!isPermissionGranted) return null;
-    return await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.best);
+    return await Geolocator.getCurrentPosition(desiredAccuracy: LocationAccuracy.high);
   }
 
-  void _listenForLocationUpdates() async {
+  void listenForDriverPositionPeriodically(DriverLogin login) async {
+    if (androidInfo.version.sdkInt <= 28 || !isPermissionGranted) return;
+    Position? position = await getDriverCurrentLocation();
+    if (position == null) return;
+    bool isUpdated = await firestoreManager.updateDriverLocation(login, position);
+    log(isUpdated ? 'Timer updates docs successfully!' : 'Position was not changing');
+  }
+
+  void listenForLocationUpdates(DriverLogin login) async {
     if (!isPermissionGranted) return;
     if (defaultTargetPlatform == TargetPlatform.android) {
       _locationSettings = AndroidSettings(
-        accuracy: LocationAccuracy.best,
+        accuracy: LocationAccuracy.high,
         distanceFilter: 0,
         forceLocationManager: true,
+        intervalDuration: const Duration(seconds: 10),
         foregroundNotificationConfig: const ForegroundNotificationConfig(
           notificationTitle: 'Running in the background',
           notificationText: 'PMS will receive your location updates even if you are not using it',
@@ -57,30 +72,27 @@ class LocationManager {
       );
     } else if (defaultTargetPlatform == TargetPlatform.iOS) {
       _locationSettings = AppleSettings(
-        accuracy: LocationAccuracy.best,
+        accuracy: LocationAccuracy.high,
         activityType: ActivityType.otherNavigation,
         distanceFilter: 0,
         showBackgroundLocationIndicator: true,
       );
     } else {
       _locationSettings = const LocationSettings(
-        accuracy: LocationAccuracy.best,
+        accuracy: LocationAccuracy.high,
         distanceFilter: 0,
       );
     }
-    Geolocator.getPositionStream(locationSettings: _locationSettings).listen(
+    positionStream = Geolocator.getPositionStream(locationSettings: _locationSettings).listen(
       (Position position) {
-        if (documentID.isNotEmpty) {
-          log(documentID);
-          log(position.toString());
-          firestoreManager.updateDriverLocation(documentID, position);
-          log('Document is updated successfully!');
-        }
+        firestoreManager.updateDriverLocation(login, position);
+        log(position.toString());
+        log('Document is updated successfully!');
         log('latest_latitude: ${position.latitude}');
         log('latest_longitude: ${position.longitude}');
         log('Can we reach this statement?');
       },
-      cancelOnError: true,
+      // cancelOnError: true,
     );
   }
 }

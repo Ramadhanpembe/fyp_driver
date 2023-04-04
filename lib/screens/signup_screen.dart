@@ -172,6 +172,7 @@ class _SignupScreenState extends State<SignupScreen> {
                               ),
                               FormTextField(
                                 hintText: 'Password',
+                                obscureText: true,
                                 controller: _passwordController,
                                 validator: (value) {
                                   if (value!.startsWith(' ') || value.contains(' ')) {
@@ -184,6 +185,7 @@ class _SignupScreenState extends State<SignupScreen> {
                               ),
                               FormTextField(
                                 hintText: 'Repeat password',
+                                obscureText: true,
                                 validator: (value) {
                                   if (value!.trim().isEmpty) {
                                     return 'Please retype your password';
