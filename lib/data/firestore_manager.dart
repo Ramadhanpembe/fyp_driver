@@ -1,6 +1,8 @@
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fyp_driver/data/notifications_manager.dart';
+import 'package:fyp_driver/data/resources.dart';
 import 'package:fyp_driver/models/driver_info.dart';
 import 'package:fyp_driver/models/driver_login.dart';
 import 'package:fyp_driver/models/driver_route.dart';
@@ -49,7 +51,6 @@ class FirestoreManager {
         },
       }).then((reference) {
         documentID = reference.id;
-        log('------------------DocumentID: $documentID----------}');
       });
       return documentID;
     }
@@ -99,6 +100,75 @@ class FirestoreManager {
 
     log('------------------------update method is reached!!!!');
     return false;
+  }
+
+  Future<int> _getAllCurrentNotifications(String phone) async {
+    int totalMessages = 0;
+    final CollectionReference driverColRef = _db.collection('drivers');
+    final QuerySnapshot querySnapshot = await driverColRef.get();
+    final List<QueryDocumentSnapshot> driverDocs = querySnapshot.docs;
+    for (var driverDoc in driverDocs) {
+      if (driverDoc['login']['phone'] == phone) {
+        final CollectionReference messageColRef = driverDoc.reference.collection('messages');
+        final QuerySnapshot querySnapshot = await messageColRef.get();
+        totalMessages = querySnapshot.docs.length;
+      }
+    }
+    return totalMessages;
+  }
+
+  void listenForNotificationUpdates(String phone) async {
+    final int totalCurrentMessages = await _getAllCurrentNotifications(phone);
+    final CollectionReference driverColRef = _db.collection('drivers');
+    final QuerySnapshot querySnapshot = await driverColRef.get();
+    final List<QueryDocumentSnapshot> driverDocs = querySnapshot.docs;
+    for (var driverDoc in driverDocs) {
+      if (driverDoc['login']['phone'] == phone) {
+        final CollectionReference messageColRef = driverDoc.reference.collection('messages');
+        messageColRef.snapshots().listen((querySnapshot) {
+          final List<QueryDocumentSnapshot> messageDocs = querySnapshot.docs;
+          if (messageDocs.length == totalCurrentMessages + 1) {
+            log('---------------------Display Notification-------------------------------');
+            List<int> messageTimes = [];
+            for (var messageDoc in messageDocs) {
+              messageTimes.add(DateTime.parse(messageDoc['message_id']).millisecondsSinceEpoch);
+            }
+            messageTimes.sort();
+            int latestTime = messageTimes.last;
+
+            for (var messageDoc in messageDocs) {
+              if (messageDoc['message_id'] ==
+                  DateTime.fromMillisecondsSinceEpoch(latestTime).toString()) {
+                messageIDNotifier.value = messageDoc['message_id'];
+                NotificationsManager.showNotification(
+                  title: messageDoc['title'],
+                  body: messageDoc['body'],
+                );
+              }
+            }
+          }
+        });
+      }
+    }
+    log('------------------------No Notification to display');
+  }
+
+  void saveResponse({bool isAccepted = false}) async {
+    final CollectionReference driverColRef = _db.collection('drivers');
+    final QuerySnapshot querySnapshot = await driverColRef.get();
+    final List<QueryDocumentSnapshot> driverDocs = querySnapshot.docs;
+    for (var driverDoc in driverDocs) {
+      if (driverDoc['login']['phone'] == driverLoginNotifier.value.phone) {
+        final CollectionReference responseColRef = driverDoc.reference.collection('responses');
+        final DocumentReference responseID =
+            responseColRef.doc('@${DateTime.now().millisecondsSinceEpoch}@');
+        responseID.set({
+          'message_id': messageIDNotifier.value,
+          'timestamp': DateTime.now().toString(),
+          'is_accepted': isAccepted,
+        });
+      }
+    }
   }
 
   // This works perfectly!

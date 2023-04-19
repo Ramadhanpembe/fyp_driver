@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
 
-import 'package:device_info_plus/device_info_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:fyp_driver/data/resources.dart';
 import 'package:fyp_driver/models/driver_login.dart';
@@ -9,15 +8,12 @@ import 'package:geolocator/geolocator.dart';
 
 class LocationManager {
   late LocationSettings _locationSettings;
-  late final AndroidDeviceInfo androidInfo;
 
   LocationManager() {
     _init();
   }
   void _init() async {
-    DeviceInfoPlugin deviceInfoPlugin = DeviceInfoPlugin();
     isPermissionGranted = await _requestLocationPermission();
-    androidInfo = await deviceInfoPlugin.androidInfo;
   }
 
   Future<bool> _requestLocationPermission() async {
