@@ -29,9 +29,20 @@ class FirestoreManager {
     }
   }
 
+  Future<bool> _driverExists(DriverInfo info) async {
+    final CollectionReference driverColRef = _db.collection('drivers');
+    final QuerySnapshot querySnapshot = await driverColRef.get();
+    final List<QueryDocumentSnapshot> driverDocs = querySnapshot.docs;
+    for (var driverDoc in driverDocs) {
+      if (info.login.phone == driverDoc['login']['phone']) return true;
+    }
+    return false;
+  }
+
   // works perfectly!
   Future<String> storeDriverInfo(Position? position, DriverInfo info) async {
-    if (position != null) {
+    bool doesExist = await _driverExists(info);
+    if (position != null && !doesExist) {
       String documentID = '';
       await _db.collection('drivers').add({
         'username': info.username,

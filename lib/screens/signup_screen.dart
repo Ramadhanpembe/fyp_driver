@@ -199,22 +199,28 @@ class _SignupScreenState extends State<SignupScreen> {
                                 mainAxisAlignment: MainAxisAlignment.end,
                                 children: [
                                   const Padding(
-                                    padding: EdgeInsets.only(right: 2.0),
+                                    padding: EdgeInsets.only(right: 6.0),
                                     child: Text('Already have account?'),
                                   ),
-                                  TextButton(
-                                    style: ButtonStyle(
-                                      backgroundColor: MaterialStateProperty.all(Colors.grey),
-                                      foregroundColor: MaterialStateProperty.all(Colors.white),
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 4.0),
+                                    child: SizedBox(
+                                      height: 30.0,
+                                      child: TextButton(
+                                        style: ButtonStyle(
+                                          backgroundColor: MaterialStateProperty.all(Colors.grey),
+                                          foregroundColor: MaterialStateProperty.all(Colors.white),
+                                        ),
+                                        onPressed: () {
+                                          Navigator.pop(context);
+                                          Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (context) => const LoginScreen()));
+                                        },
+                                        child: const Text('Login'),
+                                      ),
                                     ),
-                                    onPressed: () {
-                                      Navigator.pop(context);
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) => const LoginScreen()));
-                                    },
-                                    child: const Text('Login'),
                                   ),
                                 ],
                               ),
