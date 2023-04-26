@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:flutter/foundation.dart';
 import 'package:fyp_driver/data/resources.dart';
@@ -30,7 +29,6 @@ class LocationManager {
       if (permission == LocationPermission.denied) {
         return Future.error('Location permission is denied');
       }
-      log('----------------Permission granted: $permission}');
     }
     if (permission == LocationPermission.deniedForever) {
       return Future.error(
@@ -48,8 +46,7 @@ class LocationManager {
     if (androidInfo.version.sdkInt <= 28 || !isPermissionGranted) return;
     Position? position = await getDriverCurrentLocation();
     if (position == null) return;
-    bool isUpdated = await firestoreManager.updateDriverLocation(login, position);
-    log(isUpdated ? 'Timer updates docs successfully!' : 'Position was not changing');
+    await firestoreManager.updateDriverLocation(login, position);
   }
 
   void listenForLocationUpdates(DriverLogin login) async {
@@ -82,13 +79,8 @@ class LocationManager {
     positionStream = Geolocator.getPositionStream(locationSettings: _locationSettings).listen(
       (Position position) {
         firestoreManager.updateDriverLocation(login, position);
-        log(position.toString());
-        log('Document is updated successfully!');
-        log('latest_latitude: ${position.latitude}');
-        log('latest_longitude: ${position.longitude}');
-        log('Can we reach this statement?');
       },
-      // cancelOnError: true,
+      cancelOnError: true,
     );
   }
 }

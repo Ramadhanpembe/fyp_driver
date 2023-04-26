@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:fyp_driver/data/notifications_manager.dart';
 import 'package:fyp_driver/data/resources.dart';
@@ -27,6 +25,11 @@ class FirestoreManager {
     for (var location in _locationsMap) {
       await _db.collection('locations').add(location);
     }
+  }
+
+  // We need to get real time responses from this stream and display them to a respective driver
+  Stream<QuerySnapshot> responseStream() {
+    return _db.collection('drivers').snapshots();
   }
 
   Future<bool> _driverExists(DriverInfo info) async {
@@ -108,8 +111,6 @@ class FirestoreManager {
       });
       return true;
     }
-
-    log('------------------------update method is reached!!!!');
     return false;
   }
 
@@ -139,7 +140,6 @@ class FirestoreManager {
         messageColRef.snapshots().listen((querySnapshot) {
           final List<QueryDocumentSnapshot> messageDocs = querySnapshot.docs;
           if (messageDocs.length == totalCurrentMessages + 1) {
-            log('---------------------Display Notification-------------------------------');
             List<int> messageTimes = [];
             for (var messageDoc in messageDocs) {
               messageTimes.add(DateTime.parse(messageDoc['message_id']).millisecondsSinceEpoch);
@@ -161,7 +161,6 @@ class FirestoreManager {
         });
       }
     }
-    log('------------------------No Notification to display');
   }
 
   void saveResponse({bool isAccepted = false}) async {
@@ -192,10 +191,6 @@ class FirestoreManager {
             toTerminal: docSnapshot.get('to_terminal')));
       }
     });
-    for (var route in routes) {
-      log('fromTerminal: ${route.fromTerminal}');
-      log('toTerminal: ${route.toTerminal}');
-    }
     return routes;
   }
 }
