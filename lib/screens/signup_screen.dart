@@ -68,13 +68,11 @@ class _SignupScreenState extends State<SignupScreen> {
         longitude: position.longitude,
         speed: position.speed,
         accuracy: position.accuracy,
+        timestamp: position.timestamp.toString(),
       ),
     );
 
-    String createdID = await firestoreManager.storeDriverInfo(position, driverInfo);
-    log('Here we gooooo!');
-    log('CreatedID: $createdID');
-    log('---------------------${driverInfo.username}----------');
+    await firestoreManager.storeDriverInfo(position, driverInfo);
     return true;
   }
 

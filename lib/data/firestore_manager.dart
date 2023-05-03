@@ -6,25 +6,14 @@ import 'package:fyp_driver/models/driver_login.dart';
 import 'package:fyp_driver/models/driver_route.dart';
 import 'package:geolocator/geolocator.dart';
 
-import '../utils/sample_data.dart';
-
 class FirestoreManager {
   late FirebaseFirestore _db;
-  List<Map<String, dynamic>> _locationsMap = [];
   FirestoreManager() {
     _init();
   }
 
   void _init() {
     _db = FirebaseFirestore.instance;
-    _locationsMap = getMapFromList(locationsList);
-  }
-
-  // works perfectly!
-  void storeDriverLocations() async {
-    for (var location in _locationsMap) {
-      await _db.collection('locations').add(location);
-    }
   }
 
   // We need to get real time responses from this stream and display them to a respective driver
@@ -62,6 +51,7 @@ class FirestoreManager {
           'longitude': info.location.longitude,
           'speed': info.location.speed,
           'accuracy': info.location.accuracy,
+          'timestamp': info.location.timestamp,
         },
       }).then((reference) {
         documentID = reference.id;
@@ -107,6 +97,7 @@ class FirestoreManager {
           'longitude': position.longitude,
           'accuracy': position.accuracy,
           'speed': position.speed,
+          'timestamp': position.timestamp,
         }
       });
       return true;
