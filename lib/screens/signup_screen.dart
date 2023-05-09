@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:fyp_driver/data/resources.dart';
 import 'package:fyp_driver/models/driver_info.dart';
@@ -160,8 +158,6 @@ class _SignupScreenState extends State<SignupScreen> {
                                   setState(() {
                                     _selectedRouteIndex = int.parse(value!) - 1;
                                   });
-                                  log('---value: $value');
-                                  log('---selectedRouteIndex: $_selectedRouteIndex');
                                 },
                                 validator: (value) {
                                   if (value == '0') return 'Please select a route';
@@ -241,6 +237,7 @@ class _SignupScreenState extends State<SignupScreen> {
                                                     Text('Your account is created successfully'),
                                               ),
                                             );
+                                            Navigator.pop(context);
                                             Navigator.push(
                                                 context,
                                                 MaterialPageRoute(

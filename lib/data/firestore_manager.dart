@@ -97,7 +97,7 @@ class FirestoreManager {
           'longitude': position.longitude,
           'accuracy': position.accuracy,
           'speed': position.speed,
-          'timestamp': position.timestamp,
+          'timestamp': position.timestamp.toString(),
         }
       });
       return true;

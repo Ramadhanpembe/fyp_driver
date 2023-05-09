@@ -118,34 +118,37 @@ class _HomeScreenState extends State<HomeScreen> {
                                       visualDensity: VisualDensity.compact,
                                       title: Text(_date(driverResponses[index]['timestamp'])),
                                       subtitle: Text(_time(driverResponses[index]['timestamp'])),
-                                      trailing: SizedBox(
-                                        width: 65.0,
-                                        child: Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            driverResponses[index]['is_accepted']
-                                                ? const Icon(
-                                                    Icons.check_box,
-                                                    size: 12.0,
-                                                    color: Colors.green,
-                                                  )
-                                                : const Icon(
-                                                    Icons.cancel,
-                                                    size: 12.0,
-                                                    color: Colors.red,
-                                                  ),
-                                            driverResponses[index]['is_accepted']
-                                                ? const Text(
-                                                    'accepted',
-                                                    style: TextStyle(
-                                                        fontSize: 12.0, color: Colors.green),
-                                                  )
-                                                : const Text(
-                                                    'rejected',
-                                                    style: TextStyle(
-                                                        fontSize: 12.0, color: Colors.red),
-                                                  ),
-                                          ],
+                                      trailing: Padding(
+                                        padding: const EdgeInsets.only(right: 8.0),
+                                        child: SizedBox(
+                                          width: 70.0,
+                                          child: Row(
+                                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              driverResponses[index]['is_accepted']
+                                                  ? const Icon(
+                                                      Icons.check_box,
+                                                      size: 12.0,
+                                                      color: Colors.green,
+                                                    )
+                                                  : const Icon(
+                                                      Icons.cancel,
+                                                      size: 12.0,
+                                                      color: Colors.red,
+                                                    ),
+                                              driverResponses[index]['is_accepted']
+                                                  ? const Text(
+                                                      'accepted',
+                                                      style: TextStyle(
+                                                          fontSize: 12.0, color: Colors.green),
+                                                    )
+                                                  : const Text(
+                                                      'rejected',
+                                                      style: TextStyle(
+                                                          fontSize: 12.0, color: Colors.red),
+                                                    ),
+                                            ],
+                                          ),
                                         ),
                                       ),
                                     ),
